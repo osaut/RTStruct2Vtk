@@ -1,4 +1,4 @@
-project(RTSReader) 
+project(RTSReader)
 cmake_minimum_required(VERSION 2.8)
 
 SET(EXECUTABLE_OUTPUT_PATH ${CMAKE_CURRENT_SOURCE_DIR})
@@ -25,7 +25,6 @@ SET(EXENAME "rtsr.out")
 add_executable(${EXENAME} main.cc)
 target_link_libraries(${EXENAME} gdcmCommon)
 target_link_libraries(${EXENAME} gdcmMSFF)
-target_link_libraries(${EXENAME} vtkgdcm)
 target_link_libraries(${EXENAME} vtkgdcm)
 target_link_libraries(${EXENAME} ${VTK_LIBRARIES})
 

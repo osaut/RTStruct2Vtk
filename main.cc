@@ -45,7 +45,6 @@ void stripSpace(std::string &str) {
 
 void save_VTP_as_image(std::string name, vtkSmartPointer<vtkPolyData> polygon) {
     vtkSmartPointer<vtkLinearExtrusionFilter> extrude=vtkSmartPointer<vtkLinearExtrusionFilter>::New();
-    //extrude->SetInput(reader->GetOutput());
     extrude->SetInputData(polygon);
     extrude->SetScaleFactor(12);
     extrude->SetExtrusionTypeToNormalExtrusion();
@@ -93,10 +92,8 @@ void save_VTP_as_image(std::string name, vtkSmartPointer<vtkPolyData> polygon) {
     // ***
     // On clippe l'image avec le polydata
     vtkSmartPointer<vtkPolyDataToImageStencil> conv=vtkSmartPointer<vtkPolyDataToImageStencil>::New();
-    //    conv->SetInput(connectivityFilter->GetOutput());
     conv->SetInputData(extrude->GetOutput());
 
-    //conv->SetInput(pd);
     conv->SetOutputOrigin(origin);
     conv->SetOutputSpacing(spacing);
     conv->SetTolerance(1e-6);
@@ -178,13 +175,6 @@ int main(int argc, char *argv[])
             save_VTP_as_image(it->first, it->second);
         }
     }
-
-    // vtkSmartPointer<vtkPolyDataConnectivityFilter> connectivityFilter = vtkSmartPointer<vtkPolyDataConnectivityFilter>::New();
-    // connectivityFilter->SetInputConnection(append->GetOutputPort());
-    // connectivityFilter->SetExtractionModeToSpecifiedRegions();
-    // connectivityFilter->AddSpecifiedRegion(1); //select the region to extract here
-    // connectivityFilter->Update();
-
 
     return 0;
 }
