@@ -46,7 +46,7 @@ void stripSpace(std::string &str) {
 void save_VTP_as_image(std::string name, vtkSmartPointer<vtkPolyData> polygon) {
     vtkSmartPointer<vtkLinearExtrusionFilter> extrude=vtkSmartPointer<vtkLinearExtrusionFilter>::New();
     //extrude->SetInput(reader->GetOutput());
-    extrude->SetInput(polygon);
+    extrude->SetInputData(polygon);
     extrude->SetScaleFactor(12);
     extrude->SetExtrusionTypeToNormalExtrusion();
     extrude->SetVector(0,0,1);
@@ -77,9 +77,7 @@ void save_VTP_as_image(std::string name, vtkSmartPointer<vtkPolyData> polygon) {
     origin[2] = bounds[4] -0.1*(bounds[5]-bounds[4]);//+ spacing[2] / 2;
     std::cout <<  "\t\tOrigine = (" << origin[0] << ", " << origin[1] << ", " << origin[2] << ")" << std::endl;
     image->SetOrigin(origin);
-
-    image->SetScalarTypeToFloat();
-    image->AllocateScalars();
+    image->AllocateScalars(VTK_FLOAT,1);
 
     // fill the image with foreground voxels:
     float inval = 255.0;
@@ -96,7 +94,7 @@ void save_VTP_as_image(std::string name, vtkSmartPointer<vtkPolyData> polygon) {
     // On clippe l'image avec le polydata
     vtkSmartPointer<vtkPolyDataToImageStencil> conv=vtkSmartPointer<vtkPolyDataToImageStencil>::New();
     //    conv->SetInput(connectivityFilter->GetOutput());
-    conv->SetInput(extrude->GetOutput());
+    conv->SetInputData(extrude->GetOutput());
 
     //conv->SetInput(pd);
     conv->SetOutputOrigin(origin);
@@ -106,8 +104,8 @@ void save_VTP_as_image(std::string name, vtkSmartPointer<vtkPolyData> polygon) {
     conv->Update();
 
     vtkSmartPointer<vtkImageStencil> stenc=vtkSmartPointer<vtkImageStencil>::New();
-    stenc->SetInput(image);
-    stenc->SetStencil(conv->GetOutput());
+    stenc->SetInputData(image);
+    stenc->SetStencilData(conv->GetOutput());
     stenc->ReverseStencilOff();
     stenc->SetBackgroundValue(outval);
     stenc->Update();
@@ -125,7 +123,7 @@ void save_VTP_as_image(std::string name, vtkSmartPointer<vtkPolyData> polygon) {
     // Ecriture en tant qu'image
     vtkSmartPointer<vtkXMLImageDataWriter> ww=vtkSmartPointer<vtkXMLImageDataWriter>::New();
     ww->SetFileName(std::string(name+".vti").c_str());
-    ww->SetInput(gaussianSmoothFilter->GetOutput());
+    ww->SetInputData(gaussianSmoothFilter->GetOutput());
     ww->Write();
 
 }
@@ -166,11 +164,11 @@ int main(int argc, char *argv[])
         snprintf(fname, 300, "%d-%s.vtp", i, port_name.c_str());
 
         writer->SetFileName(fname);
-        writer->SetInput(reader->GetOutput(i));
+        writer->SetInputData(reader->GetOutput(i));
         listePolys.insert(std::pair<std::string, vtkSmartPointer<vtkPolyData> > (port_name, reader->GetOutput(i)));
         writer->Write();
 
-        append->AddInput( reader->GetOutput(i) );
+        append->AddInputData( reader->GetOutput(i) );
     }
 
     std::map<std::string, vtkSmartPointer<vtkPolyData> >::const_iterator it;
