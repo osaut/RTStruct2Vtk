@@ -43,7 +43,7 @@ void stripSpace(std::string &str) {
 }
 
 
-void save_VTP_as_image(std::string name, vtkSmartPointer<vtkPolyData> polygon) {
+void save_VTP_as_image(std::string name, vtkSmartPointer<vtkPolyData> polygon, std::string outDir) {
     vtkSmartPointer<vtkLinearExtrusionFilter> extrude=vtkSmartPointer<vtkLinearExtrusionFilter>::New();
     extrude->SetInputData(polygon);
     extrude->SetScaleFactor(12);
@@ -119,7 +119,7 @@ void save_VTP_as_image(std::string name, vtkSmartPointer<vtkPolyData> polygon) {
 
     // Ecriture en tant qu'image
     vtkSmartPointer<vtkXMLImageDataWriter> ww=vtkSmartPointer<vtkXMLImageDataWriter>::New();
-    ww->SetFileName(std::string(name+".vti").c_str());
+    ww->SetFileName(std::string(outDir+"/"+name+".vti").c_str());
     ww->SetInputData(gaussianSmoothFilter->GetOutput());
     ww->Write();
 
@@ -131,7 +131,7 @@ int main(int argc, char *argv[])
 {
     if( argc < 2 )
     {
-        std::cerr << argv[0] << " input.dcm \n";
+        std::cerr << argv[0] << " input.dcm (outdir)\n";
         return 1;
     }
 
@@ -142,6 +142,8 @@ int main(int argc, char *argv[])
     vtkSmartPointer<vtkGDCMPolyDataReader> reader = vtkSmartPointer<vtkGDCMPolyDataReader>::New();
     reader->SetFileName( filename );
     reader->Update();
+
+    std::string outDir = (argc>2) ? argv[2] : ".";
 
     vtkSmartPointer<vtkAppendPolyData> append = vtkSmartPointer<vtkAppendPolyData>::New();
 
@@ -158,7 +160,7 @@ int main(int argc, char *argv[])
         if(num_arrays_point>0)
             port_name= std::string(reader->GetOutput(i)->GetPointData()->GetArrayName(0));
         stripSpace(port_name);
-        snprintf(fname, 300, "%d-%s.vtp", i, port_name.c_str());
+        snprintf(fname, 300, "%s/%d-%s.vtp", outDir.data(), i, port_name.c_str());
 
         writer->SetFileName(fname);
         writer->SetInputData(reader->GetOutput(i));
@@ -172,7 +174,7 @@ int main(int argc, char *argv[])
     for(it=listePolys.begin(); it!= listePolys.end();++it) {
         if(it->first != "") {
             std::cout << "\tSaving " << it->first << "..." << std::endl;
-            save_VTP_as_image(it->first, it->second);
+            save_VTP_as_image(it->first, it->second, outDir);
         }
     }
 
