@@ -44,7 +44,6 @@ void stripSpace(std::string &str) {
 
 void save_VTP_as_image(std::string name, vtkSmartPointer<vtkPolyData> polygon, std::string outDir) {
     vtkSmartPointer<vtkLinearExtrusionFilter> extrude=vtkSmartPointer<vtkLinearExtrusionFilter>::New();
-    if(vtkVersion::GetVTKMajorVersion()>=6)
 #if VTK_MAJOR_VERSION >= 6
         extrude->SetInputData(polygon);
 #else
