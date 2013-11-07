@@ -181,24 +181,30 @@ int main(int argc, char *argv[])
         if(num_arrays_point>0)
             port_name2= std::string(reader->GetOutput(i)->GetPointData()->GetArrayName(0));
 
-        stripSpace(port_name);
-        stripSpace(port_name2);
-        snprintf(fname, 300, "%s/%d-%s_%s.vtp", outDir.data(), i, port_name.data(), port_name2.data());
+        stripSpace(port_name); stripSpace(port_name2);
+        if(port_name=="" && port_name2 != "")
+            port_name=port_name2;
+        if(port_name != "" && port_name2 != "")
+            port_name += "_" + port_name2;
 
-        writer->SetFileName(fname);
-#if VTK_MAJOR_VERSION >= 6
-        writer->SetInputData(reader->GetOutput(i));
-#else
-        writer->SetInput(reader->GetOutput(i));
-#endif
-        listePolys.insert(std::pair<std::string, vtkSmartPointer<vtkPolyData> > (port_name, reader->GetOutput(i)));
-        writer->Write();
+        if(port_name != "") {
+            snprintf(fname, 300, "%s/%d-%s.vtp", outDir.data(), i, port_name.data());
 
-#if VTK_MAJOR_VERSION >= 6
-        append->AddInputData( reader->GetOutput(i) );
-#else
-        append->AddInput( reader->GetOutput(i) );
-#endif
+            writer->SetFileName(fname);
+    #if VTK_MAJOR_VERSION >= 6
+            writer->SetInputData(reader->GetOutput(i));
+    #else
+            writer->SetInput(reader->GetOutput(i));
+    #endif
+            listePolys.insert(std::pair<std::string, vtkSmartPointer<vtkPolyData> > (port_name, reader->GetOutput(i)));
+            writer->Write();
+
+    #if VTK_MAJOR_VERSION >= 6
+            append->AddInputData( reader->GetOutput(i) );
+    #else
+            append->AddInput( reader->GetOutput(i) );
+    #endif
+        }
     }
 
     std::map<std::string, vtkSmartPointer<vtkPolyData> >::const_iterator it;

@@ -5,7 +5,7 @@ Dir.chdir(ARGV[0])
 patients=Dir.glob("patient*")
 patients.each { |patient|
     puts "Processing #{patient}..."
-        Dir.mkdir("./volumes") unless Dir.exists?("./volumes")
+        Dir.mkdir("#{patient}/volumes") unless Dir.exists?("#{patient}/volumes")
         exams=Dir.glob("#{patient}/p_*")
         exams.each { |exam|
             contours=Dir.glob("#{exam}/RTSTRUCT.*.dcm")
