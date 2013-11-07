@@ -177,10 +177,13 @@ int main(int argc, char *argv[])
         if(num_arrays_cell>0)
             port_name= std::string(reader->GetOutput(i)->GetCellData()->GetArrayName(0));
         const int num_arrays_point=reader->GetOutput(i)->GetPointData()->GetNumberOfArrays();
+        std::string port_name2="";
         if(num_arrays_point>0)
-            port_name= std::string(reader->GetOutput(i)->GetPointData()->GetArrayName(0));
+            port_name2= std::string(reader->GetOutput(i)->GetPointData()->GetArrayName(0));
+
         stripSpace(port_name);
-        snprintf(fname, 300, "%s/%d-%s.vtp", outDir.data(), i, port_name.c_str());
+        stripSpace(port_name2)
+        snprintf(fname, 300, "%s/%d-%s_%s.vtp", outDir.data(), i, port_name.data(), port_name2.data());
 
         writer->SetFileName(fname);
 #if VTK_MAJOR_VERSION >= 6
