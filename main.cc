@@ -182,7 +182,7 @@ int main(int argc, char *argv[])
             port_name2= std::string(reader->GetOutput(i)->GetPointData()->GetArrayName(0));
 
         stripSpace(port_name);
-        stripSpace(port_name2)
+        stripSpace(port_name2);
         snprintf(fname, 300, "%s/%d-%s_%s.vtp", outDir.data(), i, port_name.data(), port_name2.data());
 
         writer->SetFileName(fname);
