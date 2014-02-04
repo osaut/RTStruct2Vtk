@@ -18,6 +18,7 @@
 #include <vtkPointData.h>
 #include <vtkImageData.h>
 #include <vtkXMLImageDataWriter.h>
+#include <vtkMetaImageWriter.h>
 #include <vtkPolyDataToImageStencil.h>
 #include <vtkImageStencil.h>
 
@@ -58,13 +59,12 @@ void save_VTP_as_image(std::string name, vtkSmartPointer<vtkPolyData> polygon, s
     // ***
     vtkSmartPointer<vtkImageData> image = vtkSmartPointer<vtkImageData>::New();
     double bounds[6]; polygon->GetBounds(bounds);
-    double spacing[3] = {2, 2, 2};
+    double spacing[3] = {0.7, 0.7, 2.5}; // 0.7mm x 0.7mm x 2.5mm
     image->SetSpacing(spacing);
 
     int dim[3];
-    for (int i = 0; i < 3; i++)
-    {
-        dim[i] = static_cast<int>(ceil(1.2*(bounds[i * 2 + 1] - bounds[i * 2]) / spacing[i]));
+    for (int i = 0; i < 3; i++) {
+        dim[i] = static_cast<int>(ceil(1.3*(bounds[i * 2 + 1] - bounds[i * 2]) / spacing[i]));
     }
 
     // dim[2]=1; Pour sélectionner une tranche
@@ -74,9 +74,9 @@ void save_VTP_as_image(std::string name, vtkSmartPointer<vtkPolyData> polygon, s
 
     double origin[3];
     // offset ?
-    origin[0] = bounds[0] -0.1*(bounds[1]-bounds[0]); // spacing[0] / 2;
-    origin[1] = bounds[2] -0.1*(bounds[3]-bounds[2]);//+ spacing[1] / 2;
-    origin[2] = bounds[4] -0.1*(bounds[5]-bounds[4]);//+ spacing[2] / 2;
+    origin[0] = bounds[0] -0.15*(bounds[1]-bounds[0]); // spacing[0] / 2;
+    origin[1] = bounds[2] -0.15*(bounds[3]-bounds[2]);//+ spacing[1] / 2;
+    origin[2] = bounds[4] -0.15*(bounds[5]-bounds[4]);//+ spacing[2] / 2;
     std::cout <<  "\t\tOrigine = (" << origin[0] << ", " << origin[1] << ", " << origin[2] << ")" << std::endl;
     image->SetOrigin(origin);
 #if VTK_MAJOR_VERSION >= 6
@@ -130,10 +130,10 @@ void save_VTP_as_image(std::string name, vtkSmartPointer<vtkPolyData> polygon, s
      // Lissage pour un joli résultat
     vtkSmartPointer<vtkImageGaussianSmooth> gaussianSmoothFilter = vtkSmartPointer<vtkImageGaussianSmooth>::New();
     gaussianSmoothFilter->SetInputConnection(stenc->GetOutputPort());
-    gaussianSmoothFilter->SetStandardDeviation(4.0);
+    gaussianSmoothFilter->SetStandardDeviation(2.5);
     gaussianSmoothFilter->Update(); gaussianSmoothFilter->UpdateWholeExtent();
 
-    // Ecriture en tant qu'image
+    // Ecriture en tant qu'image VTI
     vtkSmartPointer<vtkXMLImageDataWriter> ww=vtkSmartPointer<vtkXMLImageDataWriter>::New();
     ww->SetFileName(std::string(outDir+"/"+name+".vti").c_str());
 #if VTK_MAJOR_VERSION >= 6
@@ -142,6 +142,16 @@ void save_VTP_as_image(std::string name, vtkSmartPointer<vtkPolyData> polygon, s
         ww->SetInput(gaussianSmoothFilter->GetOutput());
 #endif
     ww->Write();
+
+    // Ecriture en tant qu'image MHD
+    vtkSmartPointer<vtkMetaImageWriter> ww2=vtkSmartPointer<vtkMetaImageWriter>::New();
+    ww2->SetFileName(std::string(outDir+"/"+name+".mhd").c_str());
+#if VTK_MAJOR_VERSION >= 6
+        ww2->SetInputData(gaussianSmoothFilter->GetOutput());
+#else
+        ww2->SetInput(gaussianSmoothFilter->GetOutput());
+#endif
+    ww2->Write();
 
 }
 
